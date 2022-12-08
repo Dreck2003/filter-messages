@@ -1,0 +1,38 @@
+services:
+  indexer:
+    image: golang:1.19-alpine
+    command: /bin/sh -c ' go build -o indexer && ./indexer'
+    working_dir: /app
+    depends_on:
+      - zinc-search
+    build: 
+      context: .
+    container_name: zinc-indexer
+    networks:
+      - mynet
+    ports:
+      - 4002:4002
+    volumes:
+      - ./indexer:/app
+  zinc-search:
+    image: public.ecr.aws/zinclabs/zinc:latest
+    container_name: zinc-engine
+    environment:
+      - ZINC_FIRST_ADMIN_USER=${ZINC_FIRST_ADMIN_USER}
+      - ZINC_FIRST_ADMIN_PASSWORD=${ZINC_FIRST_ADMIN_PASSWORD}
+      - ZINC_DATA_PATH=/data
+    networks:
+      - mynet
+    ports:
+      - 4080:4080
+    volumes:
+      - db:/var/lib/data
+    command: zinc
+
+
+volumes:
+  db:
+
+networks:
+  mynet:
+    driver: bridge
