@@ -1,14 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+	"github.com/Dreck2003/indexer/commands"
+	"github.com/Dreck2003/indexer/reader"
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello world")
-	})
-	log.Fatal(http.ListenAndServe(":4002", nil))
+	command := commands.GetArgs()
+	reader.GetData(command)
 }
