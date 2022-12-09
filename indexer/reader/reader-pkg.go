@@ -113,6 +113,10 @@ func readContent(content string) (string, error) {
 }
 
 func dataToString(headerContent []string, body string) (string, error) {
+<<<<<<< HEAD
+=======
+	// fmt.Println("++++++++++++++++++++++++++++++++++++++++++++++++++++")
+>>>>>>> 2f56a63e6d98afe130f0da4456b74acb7f418ccf
 	if len(headerContent) <= 4 {
 		return "", errors.New("the header content over capacity of 5")
 	}
