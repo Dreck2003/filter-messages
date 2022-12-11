@@ -30,19 +30,15 @@ func PostData(json_data []byte) {
 		return
 	}
 
-	if err != nil {
-		fmt.Println("error: ", err)
+	var data map[string]interface{}
+	fmt.Println()
+	if resp.StatusCode != 200 {
+		fmt.Println("-------- 🧨 Error sending data to ZincSearch 😥----------------")
+		fmt.Println(">> StatusCode", resp.StatusCode)
+		json.NewDecoder(resp.Body).Decode(&data)
+		fmt.Println(data)
 	} else {
-		var data map[string]interface{}
-		fmt.Println()
-		if resp.StatusCode != 200 {
-			fmt.Println("-------- 🧨 Error sending data to ZincSearch 😥----------------")
-			fmt.Println(">> StatusCode", resp.StatusCode)
-			json.NewDecoder(resp.Body).Decode(&data)
-			fmt.Println(data)
-		} else {
-			fmt.Println("--------🚀 Sending data correctly ✨ ----------------")
-		}
+		fmt.Println("--------🚀 Sending data correctly ✨ ----------------")
 	}
 	resp.Body.Close()
 }

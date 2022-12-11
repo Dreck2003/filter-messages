@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-	"time"
 
 	filldb "github.com/Dreck2003/indexer/fill-db"
 )
@@ -35,7 +34,7 @@ var SECTIONS_OF_EMAIL = []EmailSection{
 func GetDataAndFillDB(src string, wg *sync.WaitGroup) {
 	_, err := os.Stat(src)
 	if os.IsNotExist(err) {
-		log.Fatal("The source file not exist")
+		log.Fatal("🧨 The source file not exist 🧨")
 	}
 	handleError(err)
 	readFolder(src, wg)
@@ -58,7 +57,6 @@ func readFolder(src string, wg *sync.WaitGroup) {
 			go filldb.PostData(parse) // Send Post to ZinSearch
 			emails = make([]map[string]any, 0)
 			count = 0
-			time.Sleep(500 * time.Millisecond)
 		}
 		info, errorPath := os.Stat(path)
 		if errorPath != nil {
