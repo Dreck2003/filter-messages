@@ -1,14 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"sync"
+
 	"net/http"
+	_ "net/http/pprof"
+
+	"github.com/Dreck2003/indexer/commands"
+	"github.com/Dreck2003/indexer/reader"
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello world")
-	})
-	log.Fatal(http.ListenAndServe(":4002", nil))
+	go func() {
+		log.Println(http.ListenAndServe("localhost:7000", nil)) // Serve only for profiling :v
+	}()
+	wg := sync.WaitGroup{} // Create a sync.WaitGroup to wait for resolve all goroutines
+	command := commands.GetArgs()
+	reader.GetDataAndFillDB(command, &wg)
+	wg.Wait() // Wait to resolve goroutines
 }
