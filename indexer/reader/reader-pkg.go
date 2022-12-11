@@ -3,19 +3,22 @@ package reader
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
+
+	filldb "github.com/Dreck2003/indexer/fill-db"
 )
 
 const FinalHeaderEmail string = "X-FileName"
 const FinalHeaderLine uint = 8
 const INDEX_NAME string = "emails"
 const RECORDS string = "records"
+const COUNT_PORTION uint = 300
 
 type EmailSection struct {
 	num         uint
@@ -29,20 +32,20 @@ var SECTIONS_OF_EMAIL = []EmailSection{
 	{num: 4, typeSection: "subject"},
 }
 
-func GetData(src string) {
+func GetDataAndFillDB(src string, wg *sync.WaitGroup) {
 	_, err := os.Stat(src)
 	if os.IsNotExist(err) {
 		log.Fatal("The source file not exist")
 	}
 	handleError(err)
-	readFolder(src)
+	readFolder(src, wg)
 }
 
-func readFolder(src string) {
-	count := 0
-	emails := []string{}
+func readFolder(src string, wg *sync.WaitGroup) {
+	var count uint = 0
+	emails := []map[string]any{}
 	filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
-		if count >= 100 {
+		if count >= COUNT_PORTION {
 			structure_email := make(map[string]interface{})
 			structure_email["index"] = INDEX_NAME
 			structure_email["records"] = emails
@@ -51,17 +54,12 @@ func readFolder(src string) {
 			if err != nil {
 				return nil
 			}
-			fmt.Println("++++++++++++++++++++++++++++++++++++++++++++++++++++")
-			fmt.Println(string(parse))
-			fmt.Println()
-			emails = make([]string, 0)
-			// count = 0  //
-			time.Sleep(2 * time.Second)
+			wg.Add(1)                 // Add new gorountine
+			go filldb.PostData(parse) // Send Post to ZinSearch
+			emails = make([]map[string]any, 0)
+			count = 0
+			time.Sleep(500 * time.Millisecond)
 		}
-		if count > 500 { // This statement is only for debug, remove in production
-			return errors.New("error maximun")
-		}
-
 		info, errorPath := os.Stat(path)
 		if errorPath != nil {
 			return nil
@@ -92,12 +90,13 @@ func readFile(path string) (string, error) {
 	return data, nil
 }
 
-func readContent(content string) (string, error) {
+func readContent(content string) (map[string]interface{}, error) {
 	lines := strings.Split(content, "\n")
 	var headerContent []string
 	i := 0
 	for i < len(lines) {
 		if i >= int(FinalHeaderLine) && strings.Contains(lines[i], FinalHeaderEmail) {
+			i++
 			break
 		}
 		headerContent = append(headerContent, lines[i])
@@ -112,9 +111,9 @@ func readContent(content string) (string, error) {
 	return dataToString(headerContent, body)
 }
 
-func dataToString(headerContent []string, body string) (string, error) {
+func dataToString(headerContent []string, body string) (map[string]interface{}, error) {
 	if len(headerContent) <= 4 {
-		return "", errors.New("the header content over capacity of 5")
+		return nil, errors.New("the header content over capacity of 5")
 	}
 	content_json := make(map[string]interface{})
 	for i := 0; i < len(SECTIONS_OF_EMAIL); i++ {
@@ -128,7 +127,7 @@ func dataToString(headerContent []string, body string) (string, error) {
 	}
 
 	content_json["content"] = body
-	return parseToJson(content_json)
+	return content_json, nil
 }
 
 func handleError(err error) {
@@ -137,10 +136,10 @@ func handleError(err error) {
 	}
 }
 
-func parseToJson(content map[string]interface{}) (string, error) {
+func parseToJson(content map[string]interface{}) ([]byte, error) {
 	text, err := json.Marshal(content)
 	if err != nil {
-		return "", errors.New("cannot posible parse to Json")
+		return nil, errors.New("cannot posible parse to Json")
 	}
-	return string(text), nil
+	return text, nil
 }
