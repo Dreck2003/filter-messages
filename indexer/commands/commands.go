@@ -9,7 +9,7 @@ import (
 func GetArgs() string {
 	args := os.Args
 	if len(args) < 2 {
-		log.Fatal("The src folder not exist!")
+		log.Fatal("The src folder provided not exist!")
 	}
 	return strings.Trim(args[1], " ")
 

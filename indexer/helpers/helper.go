@@ -8,7 +8,6 @@ import (
 )
 
 func Filter[T any](items *[]T, cb func(*T) bool) []T {
-
 	var filteredItems []T
 	for i := 0; i < len(*items); i++ {
 		if cb(&(*items)[i]) {
@@ -21,17 +20,17 @@ func Filter[T any](items *[]T, cb func(*T) bool) []T {
 func ReadEnvData() (map[string]string, error) {
 	pwd, err := os.Getwd()
 	if err != nil {
-		return nil, errors.New("error reading path to current folder")
+		return nil, errors.New("📁 error reading path to current folder")
 	}
 	path := filepath.Join(pwd, ".env")
 	_, notExistError := os.Stat(path)
 	if notExistError != nil {
-		return nil, errors.New("file .env not find in current directory")
+		return nil, errors.New("📁 file .env not find in current directory")
 	}
 
 	content, readError := os.ReadFile(path)
 	if readError != nil {
-		return nil, errors.New("cannot posible read file")
+		return nil, errors.New("📁 could not read the .env file")
 	}
 	text_content := strings.Split(string(content), "\n")
 	text_content = Filter(&text_content, func(line *string) bool {
