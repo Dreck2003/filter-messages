@@ -3,11 +3,23 @@ import { ref } from "vue";
 import ExpandContainer from "../components/expand-container.vue";
 import EmailIcon from "../components/icons/email-icon.vue";
 import SearchInput from "../components/inputs/search-input.vue";
+import Table from "../components/table.vue";
 
 let text = ref("");
 
 function handleChanged(content: string) {
 	text.value = content;
+}
+const HEADERS = [
+	{ text: "Subject", type: "subject" },
+	{ text: "From", type: "from" },
+	{ text: "To", type: "to" },
+];
+
+let BodyContent = ref([]);
+
+function handleSelectRow(id: number | string) {
+	// Filter bodyContent
 }
 </script>
 
@@ -22,9 +34,22 @@ function handleChanged(content: string) {
 		align-items="items-center"
 	>
 		<SearchInput :value="text" @changed="handleChanged" />
-		<section>
-			<!-- Table and email text -->
+		<section class="flex flex-row mx-4 my-1 gap-4">
+			<Table
+				:headers="HEADERS"
+				:body-content="BodyContent"
+				border-color="slate"
+				@select="handleSelectRow"
+			/>
+			<p>
+				<!-- Email content -->
+			</p>
 		</section>
 	</ExpandContainer>
 </template>
-<style scoped></style>
+<style>
+th,
+td {
+	padding: 0.2em 0.4em;
+}
+</style>
