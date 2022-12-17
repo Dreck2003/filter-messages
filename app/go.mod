@@ -1,4 +1,4 @@
-module github.com/Dreck2003/backend
+module github.com/Dreck2003/api
 
 go 1.19
 
