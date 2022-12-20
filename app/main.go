@@ -1,17 +1,15 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/Dreck2003/api/backend"
 )
 
 func main() {
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
-	})
-	http.ListenAndServe(":3004", router)
+	err := http.ListenAndServe(":3000", backend.CreateRoutes())
+	if err != nil {
+		log.Fatal(err)
+	}
 }
