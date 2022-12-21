@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/Dreck2003/api/backend/constants"
 	"github.com/Dreck2003/api/backend/helpers"
 	"github.com/Dreck2003/api/backend/types"
 )
@@ -46,7 +47,8 @@ type ResponseZincApi struct {
 	} `json:"hits"`
 }
 
-var URL = "http://localhost:4080/api/emails/_search"
+var URL = constants.Env[constants.ZINC_URL] + "api/emails/_search"
+
 var Email = EmailsModel{}
 
 func (e *EmailsModel) Search(term string) (*ResponseZincApi, error) {
@@ -64,7 +66,7 @@ func (e *EmailsModel) Search(term string) (*ResponseZincApi, error) {
 	}
 
 	req := helpers.CreateRequest("POST").SetUrl(URL).Build(bytes.NewBuffer(parseJson))
-	req.HttpRequest.SetBasicAuth("username", "password")
+	req.HttpRequest.SetBasicAuth(constants.Env[constants.ZINC_USERNAME], constants.Env[constants.ZINC_PASSWORD])
 	response, err := req.Send()
 
 	if err != nil {
