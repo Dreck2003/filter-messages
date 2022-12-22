@@ -14,6 +14,8 @@ let typeCell = computed(() => props.type ?? "body");
 </script>
 
 <template>
-	<td v-if="typeCell == 'body'" :class="className ?? ''">{{ text }}</td>
-	<th v-else :class="className ?? ''">{{ text }}</th>
+	<td v-if="typeCell == 'body'" :class="className ?? ''" :title="text">
+		{{ text }}
+	</td>
+	<th v-else :class="className ?? ''" :title="text">{{ text }}</th>
 </template>

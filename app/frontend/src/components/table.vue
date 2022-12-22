@@ -9,6 +9,7 @@ interface RowTable {
 	id: number | string;
 	selected: boolean;
 	cells: Array<{ text: string; id: string | number }>;
+	[key: string]: any;
 }
 
 interface IHeader {
@@ -58,10 +59,10 @@ let bodyRows = computed(() => {
 		<thead>
 			<Row :class="cleanProps.headerColor">
 				<Cell
-					v-for="cell in headers"
+					v-for="(cell, i) in headers"
 					:text="cell.text"
 					type="header"
-					:key="cell.type"
+					:key="i"
 					:class-name="cleanProps.borderColor"
 				/>
 			</Row>
@@ -72,12 +73,13 @@ let bodyRows = computed(() => {
 				@select="() => $emit('select', row.id)"
 				pointer
 				:class="row.selected ? 'bg-blue-200' : cleanProps.bodyColorPart(index)"
+				:key="index"
 			>
 				<Cell
-					v-for="bodyCell in row.cells"
+					v-for="(bodyCell, i) in row.cells"
 					:text="bodyCell.text"
 					:id="bodyCell.id"
-					:key="bodyCell.id"
+					:key="i"
 					:class-name="cleanProps.borderColor"
 				/>
 			</Row>
