@@ -1,12 +1,11 @@
 package filldb
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 
 	"github.com/Dreck2003/indexer/config"
+	"github.com/Dreck2003/indexer/helpers"
 )
 
 const ZINC_URL_BASE = "ZINC_URL"
@@ -16,15 +15,14 @@ func PostData(json_data []byte) {
 	dataEnv := config.InfoEnvData
 	url := string(dataEnv[ZINC_URL_BASE])
 	url += ZINC_URL_TO_POST
-	client := &http.Client{}
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json_data))
+	req, err := helpers.CreateRequest("POST").AddUrl(url).Build(json_data)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	req.Header.Add("Content-Type", "application/JSON")
-	req.SetBasicAuth("admin", "Complexpass#123")
-	resp, err := client.Do(req)
+	req.Request.Header.Add("Content-Type", "application/JSON")
+	req.Request.SetBasicAuth("admin", "Complexpass#123")
+	resp, err := req.Send()
 	if err != nil {
 		fmt.Println(err)
 		return
