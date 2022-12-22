@@ -1,13 +1,16 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, watchEffect } from "vue";
 import ExpandContainer from "../components/expand-container.vue";
 import EmailIcon from "../components/icons/email-icon.vue";
 import SearchInput from "../components/inputs/search-input.vue";
 import Table from "../components/table.vue";
+import { Email } from "../api/Email";
 
 let text = ref("");
+let emailText = ref<string>("");
 
 function handleChanged(content: string) {
+	emailText.value = "";
 	text.value = content;
 }
 const HEADERS = [
@@ -16,10 +19,47 @@ const HEADERS = [
 	{ text: "To", type: "to" },
 ];
 
-let BodyContent = ref([]);
+watchEffect(() => {
+	Email.SearchByText(text.value)
+		.then((emails) => {
+			BodyContent.value = emails.map((email, i) => {
+				return {
+					id: `table-${i}`,
+					selected: false,
+					content: email.content,
+					cells: [
+						{
+							id: email.id + `-${i}`,
+							text: email.subject.length > 0 ? email.subject : "-",
+						},
+						{ id: email.id + `-${i}`, text: email.from },
+						{ id: email.id + `-${i}`, text: email.to },
+					],
+				};
+			});
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+});
+
+let BodyContent = ref<
+	{
+		id: number | string;
+		selected: boolean;
+		cells: Array<{ text: string; id: string | number }>;
+		[key: string]: any;
+	}[]
+>([]);
 
 function handleSelectRow(id: number | string) {
-	// Filter bodyContent
+	BodyContent.value = BodyContent.value.map((rowEmail) => {
+		if (rowEmail.id == id) {
+			emailText.value = rowEmail["content"];
+			return { ...rowEmail, selected: true };
+		}
+		return { ...rowEmail, selected: false };
+	});
 }
 </script>
 
@@ -34,22 +74,46 @@ function handleSelectRow(id: number | string) {
 		align-items="items-center"
 	>
 		<SearchInput :value="text" @changed="handleChanged" />
-		<section class="flex flex-row mx-4 my-1 gap-4">
+		<section
+			class="SectionEmail flex flex-row mx-4 my-1 gap-4 w-full px-4 py-2 justify-center"
+		>
 			<Table
 				:headers="HEADERS"
 				:body-content="BodyContent"
 				border-color="slate"
 				@select="handleSelectRow"
 			/>
-			<p>
-				<!-- Email content -->
+			<p class="h-max overflow-auto text-sm">
+				{{ emailText }}
 			</p>
 		</section>
 	</ExpandContainer>
 </template>
 <style>
+.SectionEmail {
+	overflow-x: hidden;
+}
+
+.SectionEmail > p {
+	width: 40%;
+}
+
+table tr {
+	height: 50px;
+}
+
 th,
 td {
 	padding: 0.2em 0.4em;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	width: 100px;
+}
+table {
+	max-width: 30rem;
+	table-layout: fixed;
+	width: 60%;
+	height: max-content;
 }
 </style>
