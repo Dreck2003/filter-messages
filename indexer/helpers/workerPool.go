@@ -22,22 +22,20 @@ type WorkerPool struct {
 func NewWorker(workerPool *WorkerPool, wg *sync.WaitGroup, id uint) {
 	go func() {
 		for {
+			workerPool.mut.Lock()
 			if len(workerPool.jobs) > 0 {
-				workerPool.mut.Lock()
-				if len(workerPool.jobs) > 0 {
-					first := workerPool.jobs[0]
-					workerPool.jobs = workerPool.jobs[1:]
-					if first.Cancel {
-						wg.Done()
-						workerPool.mut.Unlock()
-						break
-					}
+				first := workerPool.jobs[0]
+				workerPool.jobs = workerPool.jobs[1:]
+				if first.Cancel {
+					wg.Done()
 					workerPool.mut.Unlock()
-					first.HandleFunc(first.Params...)
-					continue //This continue statement avoid the execute the second Unlock :!
+					break
 				}
 				workerPool.mut.Unlock()
+				first.HandleFunc(first.Params...)
+				continue //This continue statement avoid the execute the second Unlock :!
 			}
+			workerPool.mut.Unlock()
 
 		}
 	}()

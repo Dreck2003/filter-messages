@@ -4,7 +4,7 @@ import (
 	"sync"
 )
 
-type handleFunc = func(...any)
+type handleFunc = func(p ...any)
 
 type Job struct {
 	Cancel     bool
