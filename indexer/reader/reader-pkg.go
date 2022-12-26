@@ -47,7 +47,6 @@ func readFolder(src string) {
 	mut := new(sync.Mutex)
 	threadPoolToRead := helpers.NewThreadPool(150) // Pool to read files
 	threadPoolToSend := helpers.NewThreadPool(3)
-
 	filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
 		mut.Lock()
 		if count >= COUNT_PORTION {
@@ -99,12 +98,11 @@ func readFile(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	data := string(body)
-	return data, nil
+	return string(body), nil
 }
 
 func readContent(content string) (map[string]interface{}, error) {
-	lines := strings.Split(content, "\n")
+	lines := strings.Split(content, "\r\n")
 	var headerContent []string
 	i := 0
 	for i < len(lines) {
@@ -116,11 +114,7 @@ func readContent(content string) (map[string]interface{}, error) {
 		i++
 	}
 
-	body := ""
-	for i < len(lines) {
-		body += lines[i]
-		i++
-	}
+	body := strings.Trim(strings.Join(lines[i:], ""), " ")
 	return dataToString(headerContent, body)
 }
 
