@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref, watchEffect } from "vue";
-import { replace_string } from "helpers-wasm";
+import { parse_email_to_html } from "helpers-wasm";
 
 import ExpandContainer from "../components/expand-container.vue";
 import EmailIcon from "../components/icons/email-icon.vue";
@@ -65,7 +65,7 @@ function handleSelectRow(id: number | string) {
 }
 
 let stringParsed = computed(() => {
-	return replace_string(emailText.value, text.value);
+	return parse_email_to_html(emailText.value, text.value);
 });
 </script>
 
@@ -89,7 +89,10 @@ let stringParsed = computed(() => {
 				border-color="slate"
 				@select="handleSelectRow"
 			/>
-			<p class="h-max overflow-auto text-sm" v-html="stringParsed"></p>
+			<pre
+				class="h-max text-sm whitespace-pre-line"
+				v-html="stringParsed"
+			></pre>
 		</section>
 	</ExpandContainer>
 </template>
@@ -98,7 +101,7 @@ let stringParsed = computed(() => {
 	overflow-x: hidden;
 }
 
-.SectionEmail > p {
+.SectionEmail > pre {
 	width: 40%;
 }
 
