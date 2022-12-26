@@ -45,8 +45,8 @@ func readFolder(src string) {
 	var count uint = 0
 	emailsState := []map[string]any{}
 	mut := new(sync.Mutex)
-	threadPoolToRead := helpers.NewWorkerPool(150) // Pool to read files
-	threadPoolToSend := helpers.NewWorkerPool(5)
+	threadPoolToRead := helpers.NewThreadPool(150) // Pool to read files
+	threadPoolToSend := helpers.NewThreadPool(3)
 
 	filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
 		mut.Lock()
