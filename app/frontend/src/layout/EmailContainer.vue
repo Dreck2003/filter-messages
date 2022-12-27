@@ -88,10 +88,10 @@ let stringParsed = computed(() => {
 						</div>
 						<div class="flex flex-col px-2 py-1 overflow-hidden shrink">
 							<span class="text-base text-gray-700 font-semibold truncate">{{
-								email.from
+								email.name ?? email.from
 							}}</span>
 							<span class="text-xs text-gray-700 truncate mb-2">{{
-								email.subject || "---"
+								email.subject ?? "---"
 							}}</span>
 							<span class="text-xs text-gray-500 truncate">{{
 								email.content.slice(0, 30)
@@ -118,7 +118,7 @@ let stringParsed = computed(() => {
 						<div class="flex flex-row justify-between flex-wrap">
 							<span class="font-semibold">{{ emailSelected.from }}</span>
 							<span class="text-sm text-gray-600">{{
-								new Date().toDateString()
+								new Date(emailSelected.date).toDateString()
 							}}</span>
 						</div>
 						<div class="text-sm mt-2">
@@ -132,7 +132,7 @@ let stringParsed = computed(() => {
 				<hr class="h-px bg-slate-200 my-6" />
 				<section class="mx-4 md:mx-1">
 					<div class="mb-10 font-semibold">
-						{{ emailSelected.subject }}
+						{{ emailSelected.subject ?? "" }}
 					</div>
 					<pre
 						class="Section-Email-Render h-max text-sm whitespace-pre-line"
