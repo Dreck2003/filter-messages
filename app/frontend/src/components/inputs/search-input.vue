@@ -3,6 +3,12 @@ import SearchIcon from "../icons/search-icon.vue";
 
 defineProps({
 	value: String,
+	className: String,
+	inputClass: String,
+	iconClass: String,
+	iconHeight: Number,
+	iconWidth: Number,
+	placeholder: String,
 });
 const emit = defineEmits<{
 	(e: "changed", content: string): void;
@@ -13,13 +19,20 @@ function handleEnter(e: KeyboardEvent) {
 </script>
 
 <template>
-	<div class="flex rounded-md p-1 border-2 w-10/12 mx-4 my-2 border-slate-400">
-		<SearchIcon height="24" width="24" class="fill-slate-700" />
+	<div class="flex rounded-md p-1 overflow-hidden" :class="className">
+		<SearchIcon
+			class="fill-slate-700"
+			:class="iconClass"
+			:height="iconHeight"
+			:width="iconWidth"
+		/>
 		<input
+			:placeholder="placeholder"
 			type="search"
 			:value.trim="value"
 			@keyup.prevent.enter="handleEnter"
-			class="grow h-full ml-1 text-slate-700"
+			class="ml-1 text-slate-700 w-full"
+			:class="inputClass"
 		/>
 	</div>
 </template>
