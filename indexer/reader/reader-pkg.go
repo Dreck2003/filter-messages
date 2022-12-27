@@ -27,9 +27,11 @@ type EmailSection struct {
 
 var SECTIONS_OF_EMAIL = []EmailSection{
 	{num: 0, typeSection: "emailId"},
+	{num: 1, typeSection: "date"},
 	{num: 2, typeSection: "from"},
 	{num: 3, typeSection: "to"},
 	{num: 4, typeSection: "subject"},
+	{num: 8, typeSection: "name"},
 }
 
 func GetDataAndFillDB(src string) {
@@ -50,18 +52,17 @@ func readFolder(src string) {
 	filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
 		mut.Lock()
 		if count >= COUNT_PORTION {
-			structure_email := make(map[string]interface{})
-			structure_email["index"] = INDEX_NAME
-			structure_email["records"] = emailsState
-
-			parse, err := parseToJson(structure_email)
-			if err != nil {
-				return nil
-			}
 			threadPoolToSend.Execute(func(p ...any) {
-				parseJson := p[0].([]byte)
-				filldb.PostData(parseJson)
-			}, parse)
+				emails := p[0].([]map[string]any)
+				structure_email := make(map[string]interface{})
+				structure_email["index"] = INDEX_NAME
+				structure_email["records"] = emails
+				parse, err := parseToJson(structure_email)
+				if err != nil {
+					return
+				}
+				filldb.PostData(parse)
+			}, emailsState[0:])
 			emailsState = make([]map[string]any, 0)
 			count = 0
 		}
@@ -129,7 +130,7 @@ func dataToString(headerContent []string, body string) (map[string]interface{}, 
 		if len(section_email) < 2 {
 			content_json[current_section.typeSection] = ""
 		} else {
-			content_json[current_section.typeSection] = section_email[1]
+			content_json[current_section.typeSection] = strings.Trim(section_email[1], " ")
 		}
 	}
 
