@@ -18,8 +18,8 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
 pub fn parse_email_to_html(text: String, expr: String, tag: Option<String>) -> String {
-    let mut parse_text = replace_insensitive(&text, &expr.to_lowercase(), tag.as_deref());
-    parse_text = parse_text.replace("<", "&lt;");
+    let mut parse_text = text.replace("<", "&lt;");
     parse_text = parse_text.replace(">", "&gt;");
-    return parse_text;
+
+    return replace_insensitive(&text, &expr.to_lowercase(), tag.as_deref());
 }

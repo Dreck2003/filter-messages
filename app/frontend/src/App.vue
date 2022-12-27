@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Principal from "./pages/principal.vue";
+import Principal from "./pages/Principal.vue";
 </script>
 
 <template>
