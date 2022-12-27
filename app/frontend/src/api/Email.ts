@@ -5,7 +5,9 @@ export interface EmailI {
 	id: string;
 	from: string;
 	to: string;
-	subject: string;
+	subject: string | null;
+	name: string | null;
+	date: string;
 }
 
 export class Email {
@@ -19,8 +21,12 @@ export class Email {
 						content: result._source.content,
 						from: result._source.from,
 						id: result._source.emailId,
-						subject: result._source.subject,
+						subject: result._source.subject.length
+							? result._source.subject
+							: null,
 						to: result._source.to,
+						name: result._source.name.length ? result._source.name : null,
+						date: result._source.date.length ? result._source.date : null,
 					};
 				}
 			);

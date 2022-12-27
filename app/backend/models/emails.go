@@ -35,6 +35,8 @@ type ResponseHitsZincApi struct {
 		From    string `json:"from"`
 		Subject string `json:"subject"`
 		To      string `json:"to"`
+		Name    string `json:"name"`
+		Date    string `json:"date"`
 	} `json:"_source"`
 }
 
@@ -53,7 +55,7 @@ var Email = EmailsModel{}
 
 func (e *EmailsModel) Search(term string) (*ResponseZincApi, error) {
 	parseJson, err := json.Marshal(SearchStruct{
-		SearchType: "match",
+		SearchType: "matchphrase",
 		Query: QueryT{
 			Term: term,
 		},

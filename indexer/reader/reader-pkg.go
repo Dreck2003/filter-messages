@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	filldb "github.com/Dreck2003/indexer/fill-db"
+	"github.com/Dreck2003/indexer/helpers"
 )
 
 const FinalHeaderEmail string = "X-FileName"
@@ -26,57 +27,71 @@ type EmailSection struct {
 
 var SECTIONS_OF_EMAIL = []EmailSection{
 	{num: 0, typeSection: "emailId"},
+	{num: 1, typeSection: "date"},
 	{num: 2, typeSection: "from"},
 	{num: 3, typeSection: "to"},
 	{num: 4, typeSection: "subject"},
+	{num: 8, typeSection: "name"},
 }
 
-func GetDataAndFillDB(src string, wg *sync.WaitGroup) {
+func GetDataAndFillDB(src string) {
 	_, err := os.Stat(src)
 	if os.IsNotExist(err) {
 		log.Fatal("🧨 The source file not exist 🧨")
 	}
 	handleError(err)
-	readFolder(src, wg)
+	readFolder(src)
 }
 
-func readFolder(src string, wg *sync.WaitGroup) {
+func readFolder(src string) {
 	var count uint = 0
-	emails := []map[string]any{}
+	emailsState := []map[string]any{}
+	mut := new(sync.Mutex)
+	threadPoolToRead := helpers.NewThreadPool(150) // Pool to read files
+	threadPoolToSend := helpers.NewThreadPool(3)
 	filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
+		mut.Lock()
 		if count >= COUNT_PORTION {
-			structure_email := make(map[string]interface{})
-			structure_email["index"] = INDEX_NAME
-			structure_email["records"] = emails
-
-			parse, err := parseToJson(structure_email)
-			if err != nil {
-				return nil
-			}
-			wg.Add(1)                 // Add new gorountine
-			go filldb.PostData(parse) // Send Post to ZinSearch
-			emails = make([]map[string]any, 0)
+			threadPoolToSend.Execute(func(p ...any) {
+				emails := p[0].([]map[string]any)
+				structure_email := make(map[string]interface{})
+				structure_email["index"] = INDEX_NAME
+				structure_email["records"] = emails
+				parse, err := parseToJson(structure_email)
+				if err != nil {
+					return
+				}
+				filldb.PostData(parse)
+			}, emailsState[0:])
+			emailsState = make([]map[string]any, 0)
 			count = 0
 		}
-		info, errorPath := os.Stat(path)
-		if errorPath != nil {
-			return nil
-		}
-		if !info.IsDir() {
-			content, errReadFile := readFile(path)
-			if errReadFile != nil {
-				return nil
+		mut.Unlock()
+		threadPoolToRead.Execute(func(p ...any) {
+			path := p[0].(string)
+			info, errorPath := os.Stat(path)
+			if errorPath != nil {
+				return
 			}
-			string_content, parseError := readContent(content)
-			if parseError == nil {
-				emails = append(emails, string_content)
-				count++
+			if !info.IsDir() {
+				content, errReadFile := readFile(path)
+				if errReadFile != nil {
+					return
+				}
+				string_content, parseError := readContent(content)
+				if parseError == nil {
+					mut.Lock()
+					emailsState = append(emailsState, string_content)
+					count = count + 1
+					mut.Unlock()
+				}
 			}
-		}
+		}, path)
 		return nil
-
 	})
-
+	//Wait for two threadSPool:
+	threadPoolToRead.Wait()
+	threadPoolToSend.Wait()
 }
 
 func readFile(path string) (string, error) {
@@ -84,12 +99,11 @@ func readFile(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	data := string(body)
-	return data, nil
+	return string(body), nil
 }
 
 func readContent(content string) (map[string]interface{}, error) {
-	lines := strings.Split(content, "\n")
+	lines := strings.Split(content, "\r\n")
 	var headerContent []string
 	i := 0
 	for i < len(lines) {
@@ -101,11 +115,7 @@ func readContent(content string) (map[string]interface{}, error) {
 		i++
 	}
 
-	body := ""
-	for i < len(lines) {
-		body += lines[i]
-		i++
-	}
+	body := strings.Trim(strings.Join(lines[i:], ""), " ")
 	return dataToString(headerContent, body)
 }
 
@@ -120,7 +130,7 @@ func dataToString(headerContent []string, body string) (map[string]interface{}, 
 		if len(section_email) < 2 {
 			content_json[current_section.typeSection] = ""
 		} else {
-			content_json[current_section.typeSection] = section_email[1]
+			content_json[current_section.typeSection] = strings.Trim(section_email[1], " ")
 		}
 	}
 
