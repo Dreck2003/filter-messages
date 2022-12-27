@@ -82,7 +82,7 @@ let stringParsed = computed(() => {
 						>
 							<img
 								class="h-full w-full"
-								src="https://miro.medium.com/max/1024/1*jpHGc8WuZ2BHqgaThJrFoA.jpeg"
+								src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
 								alt=""
 							/>
 						</div>
@@ -110,13 +110,15 @@ let stringParsed = computed(() => {
 						class="rounded-full bg-slate-200 w-14 h-14 aspect-square overflow-hidden shrink-0"
 					>
 						<img
-							src="https://miro.medium.com/max/1024/1*jpHGc8WuZ2BHqgaThJrFoA.jpeg"
+							src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
 							alt=""
 						/>
 					</div>
 					<div class="flex flex-col flex-1 shrink">
 						<div class="flex flex-row justify-between flex-wrap">
-							<span class="font-semibold">{{ emailSelected.from }}</span>
+							<span class="font-semibold">{{
+								emailSelected.name ?? emailSelected.from
+							}}</span>
 							<span class="text-sm text-gray-600">{{
 								new Date(emailSelected.date).toDateString()
 							}}</span>
