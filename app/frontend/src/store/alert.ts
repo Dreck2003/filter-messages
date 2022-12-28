@@ -20,7 +20,6 @@ export const AlertStore = reactive<AlertStoreI>({
 		this.state.push({ ...msg, id: this.state.length + 1 });
 	},
 	removeMessage(msgId) {
-		console.log("remove: ", msgId);
 		this.state = this.state.filter(({ id }) => id != msgId);
 	},
 });

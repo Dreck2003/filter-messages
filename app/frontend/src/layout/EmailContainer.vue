@@ -1,12 +1,17 @@
 <script lang="ts" setup>
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref, watchEffect, reactive } from "vue";
 import { Email, EmailI } from "../api/Email";
 import { parse_email_to_html } from "helpers-wasm";
 import SearchInput from "../components/inputs/search-input.vue";
 import { AlertStore } from "../store/alert";
+import SpinNormal from "../components/spiners/spin-normal.vue";
 
 let text = ref("");
 let emailText = ref<string>("");
+let fetchState = reactive({
+	isError: false,
+	isLoading: false,
+});
 let emailSelected = ref<EmailI | null>(null);
 
 let listOfEmails = ref<EmailI[]>([]);
@@ -28,15 +33,22 @@ function selectedEmail(id: EmailI["id"]) {
 
 watchEffect(() => {
 	if (text.value.length > 0) {
+		fetchState.isError = false;
+		fetchState.isLoading = true;
 		Email.SearchByText(text.value)
 			.then((emails) => {
 				listOfEmails.value = emails;
+				fetchState.isError = false;
 			})
 			.catch((err) => {
+				fetchState.isError = true;
 				AlertStore.addMessage({
 					text: err,
 					type: "Alert",
 				});
+			})
+			.finally(() => {
+				fetchState.isLoading = false;
 			});
 	}
 });
@@ -77,6 +89,7 @@ let stringParsed = computed(() => {
 							borderLeft:
 								email.id == emailSelected?.id ? '2px solid #8e8ec9' : '0',
 						}"
+						v-if="!fetchState.isLoading && listOfEmails.length > 0"
 					>
 						<div
 							class="rounded-full bg-slate-200 h-8 w-8 aspect-square ml-2 mt-2.5 overflow-hidden shrink-0"
@@ -98,6 +111,18 @@ let stringParsed = computed(() => {
 								email.content.slice(0, 30)
 							}}</span>
 						</div>
+					</div>
+					<div
+						v-if="listOfEmails.length == 0"
+						class="flex h-full w-full items-center justify-center text-gray-700"
+					>
+						no emails
+					</div>
+					<div
+						v-if="fetchState.isLoading"
+						class="flex items-center justify-center h-full w-full text-gray-700"
+					>
+						<SpinNormal />
 					</div>
 				</div>
 			</div>
