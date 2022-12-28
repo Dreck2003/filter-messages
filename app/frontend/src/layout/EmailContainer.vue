@@ -3,6 +3,7 @@ import { computed, ref, watchEffect } from "vue";
 import { Email, EmailI } from "../api/Email";
 import { parse_email_to_html } from "helpers-wasm";
 import SearchInput from "../components/inputs/search-input.vue";
+import { AlertStore } from "../store/alert";
 
 let text = ref("");
 let emailText = ref<string>("");
@@ -32,7 +33,10 @@ watchEffect(() => {
 				listOfEmails.value = emails;
 			})
 			.catch((err) => {
-				console.log(err);
+				AlertStore.addMessage({
+					text: err,
+					type: "Alert",
+				});
 			});
 	}
 });
@@ -43,9 +47,6 @@ let stringParsed = computed(() => {
 	}
 	return emailSelected.value?.content || "";
 });
-
-// TODO: Change the image to user icon
-// TODO: Change the Date to email Date
 </script>
 <template>
 	<div
